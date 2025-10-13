@@ -1,0 +1,5 @@
+{
+  "name": "My Google Drive account",
+  "provider": "google_drive",
+  "root_folder": false
+}
