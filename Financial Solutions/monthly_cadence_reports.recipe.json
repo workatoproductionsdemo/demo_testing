@@ -1,0 +1,245 @@
+{
+  "name": "Monthly cadence Reports",
+  "version": 1,
+  "private": true,
+  "concurrency": 1,
+  "code": {
+    "number": 0,
+    "provider": "clock",
+    "name": "scheduled_event",
+    "as": "18995650",
+    "keyword": "trigger",
+    "input": {
+      "time_unit": "minutes",
+      "trigger_every": "5"
+    },
+    "extended_input_schema": [
+      {
+        "control_type": "integer",
+        "default": "5",
+        "enforce_template_mode": true,
+        "extends_schema": true,
+        "hint": "Define repeating schedule. Enter whole numbers only.\n                        This field can be set to a minimum of 5 minutes.",
+        "label": "Trigger every",
+        "name": "trigger_every",
+        "optional": false,
+        "suffix": {
+          "text": "minutes"
+        },
+        "type": "string"
+      },
+      {
+        "control_type": "select",
+        "hint": "Select the timezone to use. Leave it blank to use <b>{{authUser.account_timezone}}</b>",
+        "label": "Timezone",
+        "name": "timezone",
+        "optional": true,
+        "pick_list": "timezone_id_global_pick_list",
+        "pick_list_connection_less": true,
+        "type": "string"
+      },
+      {
+        "control_type": "date_time",
+        "enforce_template_mode": true,
+        "extends_schema": true,
+        "hint": "Set date and time to start or leave blank to start immediately. <b>Once recipe has been run or tested, value cannot be changed.</b>",
+        "label": "Start after",
+        "name": "start_after",
+        "optional": true,
+        "parse_output": "date_time_conversion",
+        "since_field": true,
+        "type": "date_time",
+        "ignore_timezone": true,
+        "render_input": "date_time_conversion"
+      }
+    ],
+    "block": [
+      {
+        "number": 1,
+        "provider": "google_drive",
+        "name": "download_file_contents",
+        "as": "7e63ebce",
+        "keyword": "action",
+        "dynamicPickListSelection": {
+          "fileId": {
+            "ids": [
+              "0AMrokbLQHATEUk9PVA",
+              "1Im-r12OBCA2m13pKGZctKUgszsCse9sY",
+              "1H-tKCEeu8SQS8XBo7fUT916cQ0Io6ioB"
+            ],
+            "titles": [
+              "My Drive",
+              "Recipe Optimization Exercises",
+              "Customer_Migration_Data - Customer_Migration_Data.csv"
+            ]
+          }
+        },
+        "toggleCfg": {
+          "fileId": false
+        },
+        "input": {
+          "fileId": "1H-tKCEeu8SQS8XBo7fUT916cQ0Io6ioB"
+        },
+        "uuid": "d8f0ff66-d282-4193-8e23-a5ed8be077b7"
+      },
+      {
+        "number": 2,
+        "provider": "workato_files",
+        "name": "store_file",
+        "as": "c47f8a04",
+        "keyword": "action",
+        "dynamicPickListSelection": {
+          "file_path": {
+            "ids": [
+              "/"
+            ],
+            "titles": [
+              "Root directory"
+            ]
+          }
+        },
+        "toggleCfg": {
+          "is_csv_file": true,
+          "file_path": true
+        },
+        "input": {
+          "is_csv_file": "false",
+          "schema_type": "auto",
+          "csv_has_header": "true",
+          "csv_delimiter": "comma",
+          "csv_quote": "double",
+          "encoding": "UTF-8",
+          "file_name": "Monthly Cadence",
+          "file_path": "/",
+          "content": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"google_drive\",\"line\":\"7e63ebce\",\"path\":[\"payload\"]}')}"
+        },
+        "uuid": "bf87dbea-cb50-4b02-a70e-3bdcd4c31866"
+      },
+      {
+        "number": 3,
+        "provider": "workato_variable",
+        "name": "declare_list",
+        "as": "9d1a9106",
+        "keyword": "action",
+        "input": {
+          "name": "List",
+          "list_item_schema_json": "[{\"name\":\"report_name\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\",\"label\":\"Report name\"}]",
+          "list_items": {
+            "report_name": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_files\",\"line\":\"c47f8a04\",\"path\":[\"name\"]}')}"
+          }
+        },
+        "extended_output_schema": [
+          {
+            "hint": "",
+            "label": "List",
+            "name": "list_items",
+            "of": "object",
+            "optional": false,
+            "properties": [
+              {
+                "control_type": "text",
+                "label": "Report name",
+                "name": "report_name",
+                "type": "string",
+                "optional": false
+              }
+            ],
+            "type": "array"
+          }
+        ],
+        "extended_input_schema": [
+          {
+            "hint": "Set the initial items in the list. Defaults to an empty list if not supplied.",
+            "label": "Items",
+            "name": "list_items",
+            "of": "object",
+            "optional": true,
+            "properties": [
+              {
+                "control_type": "text",
+                "label": "Report name",
+                "name": "report_name",
+                "type": "string",
+                "optional": false
+              }
+            ],
+            "type": "array"
+          }
+        ],
+        "uuid": "86e11a88-e79f-41e9-b70d-88ef07c84bb0"
+      },
+      {
+        "number": 4,
+        "provider": "logger",
+        "name": "log_message",
+        "as": "7a30038a",
+        "keyword": "action",
+        "input": {
+          "user_logs_enabled": "false",
+          "message": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"google_drive\",\"line\":\"7e63ebce\",\"path\":[\"payload\"]}')}"
+        },
+        "extended_input_schema": [
+          {
+            "control_type": "switch",
+            "default": false,
+            "disable_formula": true,
+            "extends_schema": true,
+            "hint": "                Send a copy of the message to Workato logs.\n                <a href=\"https://docs.workato.com/features/logging-service.html\" target=\"_blank\" class=\"ng-scope\">\n                  Learn more\n                </a>\n",
+            "label": "Send to Workato log service",
+            "name": "user_logs_enabled",
+            "optional": true,
+            "type": "string"
+          }
+        ],
+        "uuid": "49d8a4fd-5698-45a5-b5f4-0a72f39f65c4"
+      },
+      {
+        "number": 5,
+        "as": "04821042",
+        "keyword": "stop",
+        "input": {
+          "stop_with_error": "false"
+        },
+        "uuid": "3217eda7-2781-46e9-91c8-6d4623211363"
+      }
+    ],
+    "uuid": "6124558b-8495-4ef1-9afc-7fad6b6d8df0",
+    "unfinished": false
+  },
+  "config": [
+    {
+      "keyword": "application",
+      "provider": "clock",
+      "skip_validation": false,
+      "account_id": null
+    },
+    {
+      "keyword": "application",
+      "provider": "google_drive",
+      "skip_validation": false,
+      "account_id": {
+        "zip_name": "Financial Solutions/my_google_drive_account.connection.json",
+        "name": "My Google Drive account",
+        "folder": "Financial Solutions"
+      }
+    },
+    {
+      "keyword": "application",
+      "provider": "workato_files",
+      "skip_validation": false,
+      "account_id": null
+    },
+    {
+      "keyword": "application",
+      "provider": "workato_variable",
+      "skip_validation": false,
+      "account_id": null
+    },
+    {
+      "keyword": "application",
+      "provider": "logger",
+      "skip_validation": false,
+      "account_id": null
+    }
+  ]
+}
