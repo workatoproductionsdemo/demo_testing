@@ -13,6 +13,7 @@
     "input": {
       "time_unit": "minutes",
       "trigger_every": "5"
+      
     },
     "extended_input_schema": [
       {
